@@ -1,11 +1,9 @@
-package com.example.entity;
+package com.example.dto.schedule;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
-public class Schedule {
+public class ScheduleResponseDto {
     private Long scheduleId;
     private String task;
     private String writer;
