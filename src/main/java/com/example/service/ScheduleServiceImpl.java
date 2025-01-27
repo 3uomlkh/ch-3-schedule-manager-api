@@ -3,6 +3,7 @@ package com.example.service;
 import com.example.dto.schedule.ScheduleRequestDto;
 import com.example.dto.schedule.ScheduleResponseDto;
 import com.example.entity.Schedule;
+import com.example.repository.JdbcTemplateScheduleRepository;
 import com.example.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     public List<ScheduleResponseDto> findAllSchedules() {
-        return List.of();
+        return scheduleRepository.findAllSchedules();
     }
 
     @Override
