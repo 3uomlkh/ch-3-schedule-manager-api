@@ -54,6 +54,15 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
     }
 
     @Override
+    public List<ScheduleResponseDto> findSchedulesByUpdatedAt(String updatedAt) {
+        return jdbcTemplate.query(
+                "SELECT * FROM schedules WHERE DATE(updatedAt) = ?",
+                scheduleRowMapper(),
+                updatedAt
+        );
+    }
+
+    @Override
     public Schedule findScheduleById(Long id) {
         return null;
     }
