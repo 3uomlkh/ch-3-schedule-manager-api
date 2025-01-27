@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/schedules")
@@ -26,7 +27,15 @@ public class ScheduleController {
 
     @GetMapping
     public ResponseEntity<List<ScheduleResponseDto>> findAllSchedules() {
-        return new ResponseEntity<>(scheduleService.findAllSchedules(), HttpStatus.CREATED);
+        return new ResponseEntity<>(scheduleService.findAllSchedules(), HttpStatus.OK);
+    }
+
+    @GetMapping("/writer")
+    public ResponseEntity<List<ScheduleResponseDto>> findSchedulesByWriter(
+            @RequestParam(required = false) String writer
+    ) {
+        System.out.println("Received writer: " + writer);
+        return new ResponseEntity<>(scheduleService.findSchedulesByWriter(writer), HttpStatus.OK);
     }
 }
 

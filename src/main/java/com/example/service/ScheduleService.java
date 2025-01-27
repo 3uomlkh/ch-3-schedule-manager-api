@@ -8,7 +8,8 @@ import java.util.List;
 public interface ScheduleService {
     ScheduleResponseDto saveSchedule(ScheduleRequestDto dto);
     List<ScheduleResponseDto> findAllSchedules();
-    ScheduleResponseDto findScheduleById(Long scheduleId);
+    List<ScheduleResponseDto> findSchedulesByWriter(String writer);
+    ScheduleResponseDto findScheduleById(Long id);
     ScheduleResponseDto updateSchedule(Long id, String task, String writer);
     void deleteSchedule(Long id);
 }
