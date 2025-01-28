@@ -80,6 +80,15 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
     }
 
     @Override
+    public Schedule findScheduleByIdWithPassword(Long scheduleId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT * FROM schedules WHERE scheduleId = ?",
+                scheduleWithPasswordRowMapper(),
+                scheduleId
+        );
+    }
+
+    @Override
     public int updateSchedule(Long scheduleId, Schedule schedule) {
         StringBuilder query = new StringBuilder("UPDATE schedules SET");
         List<Object> params = new ArrayList<>();
@@ -117,6 +126,17 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
                 rs.getLong("scheduleId"),
                 rs.getString("task"),
                 rs.getString("writer"),
+                rs.getObject("createdAt", LocalDateTime.class),
+                rs.getObject("updatedAt", LocalDateTime.class)
+        );
+    }
+
+    private RowMapper<Schedule> scheduleWithPasswordRowMapper() {
+        return (rs, rowNum) -> new Schedule(
+                rs.getLong("scheduleId"),
+                rs.getString("task"),
+                rs.getString("writer"),
+                rs.getString("password"),
                 rs.getObject("createdAt", LocalDateTime.class),
                 rs.getObject("updatedAt", LocalDateTime.class)
         );

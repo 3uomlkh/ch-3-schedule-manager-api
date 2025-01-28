@@ -44,6 +44,10 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Transactional
     @Override
     public ScheduleResponseDto updateSchedule(Long scheduleId, ScheduleRequestDto dto) {
+        Schedule current = scheduleRepository.findScheduleByIdWithPassword(scheduleId);
+        if (!current.getPassword().equals(dto.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong password.");
+        }
 
         if (dto.getTask() == null || dto.getWriter() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The task and writer are required values.");
