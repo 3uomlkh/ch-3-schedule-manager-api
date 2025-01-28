@@ -6,7 +6,6 @@ import com.example.entity.Schedule;
 import com.example.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -41,7 +40,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     public ScheduleResponseDto findScheduleById(Long scheduleId) {
-        return null;
+        return scheduleRepository.findScheduleById(scheduleId);
     }
 
     @Override

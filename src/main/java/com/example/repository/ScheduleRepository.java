@@ -3,7 +3,6 @@ package com.example.repository;
 import com.example.dto.schedule.ScheduleResponseDto;
 import com.example.entity.Schedule;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ScheduleRepository {
@@ -11,6 +10,6 @@ public interface ScheduleRepository {
     List<ScheduleResponseDto> findAllSchedules();
     List<ScheduleResponseDto> findSchedulesByWriter(String writer);
     List<ScheduleResponseDto> findSchedulesByUpdatedAt(String updatedAt);
-    Schedule findScheduleById(Long id);
+    ScheduleResponseDto findScheduleById(Long scheduleId);
     void deleteSchedule(Long id);
 };

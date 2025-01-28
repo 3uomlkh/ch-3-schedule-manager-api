@@ -63,8 +63,13 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
     }
 
     @Override
-    public Schedule findScheduleById(Long id) {
-        return null;
+    public ScheduleResponseDto findScheduleById(Long scheduleId) {
+        List<ScheduleResponseDto> query = jdbcTemplate.query(
+                "SELECT * FROM schedules WHERE scheduleId = ?",
+                scheduleRowMapper(),
+                scheduleId
+        );
+        return query.isEmpty() ? null : query.get(0);
     }
 
     @Override
@@ -74,7 +79,7 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
 
     private RowMapper<ScheduleResponseDto> scheduleRowMapper() {
         return (rs, rowNum) -> new ScheduleResponseDto(
-                rs.getLong("schedule_id"),
+                rs.getLong("scheduleId"),
                 rs.getString("task"),
                 rs.getString("writer"),
                 rs.getObject("createdAt", LocalDateTime.class),
