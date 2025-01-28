@@ -1,6 +1,5 @@
 package com.example.repository;
 
-import com.example.dto.schedule.ScheduleRequestDto;
 import com.example.dto.schedule.ScheduleResponseDto;
 import com.example.entity.Schedule;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -117,8 +116,8 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
     }
 
     @Override
-    public void deleteSchedule(Long id) {
-
+    public int deleteSchedule(Long scheduleId) {
+        return jdbcTemplate.update("DELETE FROM schedules WHERE scheduleId = ?", scheduleId);
     }
 
     private RowMapper<ScheduleResponseDto> scheduleRowMapper() {

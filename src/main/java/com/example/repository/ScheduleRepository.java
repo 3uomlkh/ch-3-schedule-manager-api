@@ -12,5 +12,5 @@ public interface ScheduleRepository {
     ScheduleResponseDto findScheduleById(Long scheduleId);
     Schedule findScheduleByIdWithPassword(Long scheduleId);
     int updateSchedule(Long scheduleId, Schedule schedule);
-    void deleteSchedule(Long id);
+    int deleteSchedule(Long scheduleId);
 };

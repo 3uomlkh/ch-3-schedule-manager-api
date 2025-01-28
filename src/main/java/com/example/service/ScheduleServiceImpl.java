@@ -64,7 +64,16 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    public void deleteSchedule(Long id) {
+    public void deleteSchedule(Long scheduleId, String password) {
+        Schedule current = scheduleRepository.findScheduleByIdWithPassword(scheduleId);
+        if (!current.getPassword().equals(password)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong password.");
+        }
 
+        int deleteRow = scheduleRepository.deleteSchedule(scheduleId);
+
+        if (deleteRow == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist schedule");
+        }
     }
 }
