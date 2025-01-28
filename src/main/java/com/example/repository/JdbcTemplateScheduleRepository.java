@@ -1,5 +1,6 @@
 package com.example.repository;
 
+import com.example.dto.schedule.ScheduleRequestDto;
 import com.example.dto.schedule.ScheduleResponseDto;
 import com.example.entity.Schedule;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,7 +25,7 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
     @Override
     public ScheduleResponseDto saveSchedule(Schedule schedule) {
         SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
-        jdbcInsert.withTableName("schedules").usingGeneratedKeyColumns("schedule_id");
+        jdbcInsert.withTableName("schedules").usingGeneratedKeyColumns("scheduleId");
 
         LocalDateTime now = LocalDateTime.now();
         Map<String, Object> parameters = new HashMap<>();
@@ -76,6 +77,34 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
                 scheduleId
         );
         return query.isEmpty() ? null : query.get(0);
+    }
+
+    @Override
+    public int updateSchedule(Long scheduleId, Schedule schedule) {
+        StringBuilder query = new StringBuilder("UPDATE schedules SET");
+        List<Object> params = new ArrayList<>();
+        boolean firstField = true;
+
+        if (schedule.getTask() != null) {
+            query.append(" task = ?");
+            params.add(schedule.getTask());
+            firstField = false;
+        }
+
+        if (schedule.getWriter() != null) {
+            if (!firstField) query.append(",");
+            query.append(" writer = ?");
+            params.add(schedule.getWriter());
+        }
+
+        query.append(" WHERE scheduleId = ?");
+        params.add(scheduleId);
+
+        if (params.size() == 1) { // scheduleId만 있는 경우 (업데이트할 내용 없음)
+            throw new IllegalArgumentException("업데이트할 필드가 없습니다.");
+        }
+
+        return jdbcTemplate.update(query.toString(), params.toArray());
     }
 
     @Override

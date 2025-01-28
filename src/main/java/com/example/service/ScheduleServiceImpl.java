@@ -4,7 +4,10 @@ import com.example.dto.schedule.ScheduleRequestDto;
 import com.example.dto.schedule.ScheduleResponseDto;
 import com.example.entity.Schedule;
 import com.example.repository.ScheduleRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -38,9 +41,22 @@ public class ScheduleServiceImpl implements ScheduleService {
         return scheduleRepository.findScheduleById(scheduleId);
     }
 
+    @Transactional
     @Override
-    public ScheduleResponseDto updateSchedule(Long id, String task, String writer) {
-        return null;
+    public ScheduleResponseDto updateSchedule(Long scheduleId, ScheduleRequestDto dto) {
+
+        if (dto.getTask() == null || dto.getWriter() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The task and writer are required values.");
+        }
+
+        Schedule schedule = new Schedule(dto.getTask(), dto.getWriter(), dto.getPassword());
+        int updatedRow = scheduleRepository.updateSchedule(scheduleId, schedule);
+
+        if (updatedRow == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist schedule");
+        }
+
+        return scheduleRepository.findScheduleById(scheduleId);
     }
 
     @Override
