@@ -45,20 +45,26 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
     }
 
     @Override
-    public List<ScheduleResponseDto> findSchedulesByWriter(String writer) {
-        return jdbcTemplate.query(
-                "SELECT * FROM schedules WHERE writer = ?",
-                scheduleRowMapper(),
-                writer
-        );
-    }
+    public List<ScheduleResponseDto> findSchedules(String writer, String updatedAt) {
+        StringBuilder query = new StringBuilder("SELECT * FROM schedules WHERE 1=1");
+        List<Object> params = new ArrayList<>();
 
-    @Override
-    public List<ScheduleResponseDto> findSchedulesByUpdatedAt(String updatedAt) {
+        if (writer != null) {
+            query.append(" AND writer = ?");
+            params.add(writer);
+        }
+
+        if (updatedAt != null) {
+            query.append(" AND DATE(updatedAt) = ?");
+            params.add(updatedAt);
+        }
+
+        query.append(" ORDER BY DATE(updatedAt) DESC");
+
         return jdbcTemplate.query(
-                "SELECT * FROM schedules WHERE DATE(updatedAt) = ?",
+                query.toString(),
                 scheduleRowMapper(),
-                updatedAt
+                params.toArray()
         );
     }
 

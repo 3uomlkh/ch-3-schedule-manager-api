@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -26,22 +25,14 @@ public class ScheduleController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ScheduleResponseDto>> findAllSchedules() {
-        return new ResponseEntity<>(scheduleService.findAllSchedules(), HttpStatus.OK);
-    }
-
-    @GetMapping("/writer")
-    public ResponseEntity<List<ScheduleResponseDto>> findSchedulesByWriter(
-            @RequestParam(required = false) String writer
-    ) {
-        return new ResponseEntity<>(scheduleService.findSchedulesByWriter(writer), HttpStatus.OK);
-    }
-
-    @GetMapping("/updatedAt")
-    public ResponseEntity<List<ScheduleResponseDto>> findSchedulesByUpdatedAt(
+    public ResponseEntity<List<ScheduleResponseDto>> findSchedules(
+            @RequestParam(required = false) String writer,
             @RequestParam(required = false) String updatedAt
     ) {
-        return new ResponseEntity<>(scheduleService.findSchedulesByUpdatedAt(updatedAt), HttpStatus.OK);
+        if (writer == null && updatedAt == null) {
+            return new ResponseEntity<>(scheduleService.findAllSchedules(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(scheduleService.findSchedules(writer, updatedAt), HttpStatus.OK);
     }
 
     @GetMapping("/{scheduleId}")

@@ -29,13 +29,8 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    public List<ScheduleResponseDto> findSchedulesByWriter(String writer) {
-        return scheduleRepository.findSchedulesByWriter(writer);
-    }
-
-    @Override
-    public List<ScheduleResponseDto> findSchedulesByUpdatedAt(String updatedAt) {
-        return scheduleRepository.findSchedulesByUpdatedAt(updatedAt);
+    public List<ScheduleResponseDto> findSchedules(String writer, String updatedAt) {
+        return scheduleRepository.findSchedules(writer, updatedAt);
     }
 
     @Override
