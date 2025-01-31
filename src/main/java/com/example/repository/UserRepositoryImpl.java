@@ -68,7 +68,11 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public UserResponseDto findUserById(Long userId) {
-        return null;
+        return jdbcTemplate.queryForObject(
+                "SELECT * FROM users WHERE userId = ?",
+                userRowMapper(),
+                userId
+        );
     }
 
     @Override

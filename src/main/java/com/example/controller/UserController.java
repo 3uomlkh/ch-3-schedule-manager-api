@@ -30,4 +30,9 @@ public class UserController {
         return new ResponseEntity<>(userService.findUserByEmail(email), HttpStatus.OK);
     }
 
+    @GetMapping("/{userId}")
+    ResponseEntity<UserResponseDto> findUserById(@PathVariable Long userId) {
+        return new ResponseEntity<>(userService.findUserById(userId), HttpStatus.OK);
+    }
+
 }

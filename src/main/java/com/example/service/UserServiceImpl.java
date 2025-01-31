@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto findUserById(Long userId) {
-        return null;
+        return userRepository.findUserById(userId);
     }
 
     @Override
