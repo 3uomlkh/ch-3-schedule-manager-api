@@ -1,6 +1,5 @@
 package com.example.repository;
 
-import com.example.dto.user.UserRequestDto;
 import com.example.dto.user.UserResponseDto;
 import com.example.entity.User;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,8 +76,37 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public UserResponseDto updateUser(Long userId, UserRequestDto dto) {
-        return null;
+    public int updateUser(Long userId, User user) {
+        StringBuilder query = new StringBuilder("UPDATE users SET");
+        List<Object> params = new ArrayList<>();
+        boolean firstField = true;
+
+        if (user.getName() != null) {
+            query.append(" name = ?");
+            params.add(user.getName());
+            firstField = false;
+        }
+
+        if (user.getEmail() != null) {
+            if (!firstField) query.append(",");
+            query.append(" email = ?");
+            params.add(user.getEmail());
+        }
+
+        if (user.getPassword() != null) {
+            if (!firstField) query.append(",");
+            query.append(" password = ?");
+            params.add(user.getPassword());
+        }
+
+        query.append(" WHERE userId = ?");
+        params.add(userId);
+
+        if (params.size() == 1) {
+            throw new IllegalArgumentException("업데이트할 필드가 없습니다.");
+        }
+
+        return jdbcTemplate.update(query.toString(), params.toArray());
     }
 
     @Override

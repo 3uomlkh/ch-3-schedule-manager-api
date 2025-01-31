@@ -4,7 +4,9 @@ import com.example.dto.user.UserRequestDto;
 import com.example.dto.user.UserResponseDto;
 import com.example.entity.User;
 import com.example.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -45,7 +47,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto updateUser(Long userId, UserRequestDto dto) {
-        return null;
+        User user = new User(dto.getName(), dto.getEmail(), dto.getPassword());
+        int updatedRow = userRepository.updateUser(userId, user);
+
+        if (updatedRow == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist user");
+        }
+        return userRepository.findUserById(userId);
     }
 
     @Override

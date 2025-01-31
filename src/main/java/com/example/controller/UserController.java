@@ -35,4 +35,12 @@ public class UserController {
         return new ResponseEntity<>(userService.findUserById(userId), HttpStatus.OK);
     }
 
+    @PatchMapping("/{userId}")
+    public ResponseEntity<UserResponseDto> updateUser(
+            @PathVariable Long userId,
+            @RequestBody UserRequestDto dto
+    ) {
+        return new ResponseEntity<>(userService.updateUser(userId, dto), HttpStatus.OK);
+    }
+
 }

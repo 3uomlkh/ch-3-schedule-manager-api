@@ -1,6 +1,5 @@
 package com.example.repository;
 
-import com.example.dto.user.UserRequestDto;
 import com.example.dto.user.UserResponseDto;
 import com.example.entity.User;
 
@@ -13,6 +12,6 @@ public interface UserRepository {
     List<UserResponseDto> findAllUsers();
     UserResponseDto findUserByNameAndPassword(User user);
     UserResponseDto findUserById(Long userId);
-    UserResponseDto updateUser(Long userId, UserRequestDto dto);
+    int updateUser(Long userId, User user);
     void deleteUser(Long userId, String password);
 }
