@@ -8,9 +8,8 @@ import java.util.List;
 
 public interface UserRepository {
     UserResponseDto saveUser(User user);
-
+    UserResponseDto findUserByEmail(String email);
     UserResponseDto findUserByNameAndPassword(String name, String password);
-
     List<UserResponseDto> findAllUsers();
     UserResponseDto findUserByNameAndPassword(User user);
     UserResponseDto findUserById(Long userId);

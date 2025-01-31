@@ -43,6 +43,15 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public UserResponseDto findUserByEmail(String email) {
+        return jdbcTemplate.queryForObject(
+                "SELECT * FROM users WHERE email = ?",
+                userRowMapper(),
+                email
+        );
+    }
+
+    @Override
     public UserResponseDto findUserByNameAndPassword(String name, String password) {
         return null;
     }
@@ -71,4 +80,15 @@ public class UserRepositoryImpl implements UserRepository {
     public void deleteUser(Long userId, String password) {
 
     }
+
+    private RowMapper<UserResponseDto> userRowMapper() {
+        return (rs, rowNum) -> new UserResponseDto(
+                rs.getLong("userId"),
+                rs.getString("name"),
+                rs.getString("email"),
+                rs.getObject("createdAt", LocalDateTime.class),
+                rs.getObject("updatedAt", LocalDateTime.class)
+        );
+    }
+
 }

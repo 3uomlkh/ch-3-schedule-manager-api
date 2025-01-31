@@ -5,10 +5,7 @@ import com.example.dto.user.UserResponseDto;
 import com.example.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
@@ -24,4 +21,13 @@ public class UserController {
     ResponseEntity<UserResponseDto> createUser(@RequestBody UserRequestDto dto) {
         return new ResponseEntity<>(userService.saveUser(dto), HttpStatus.CREATED);
     }
+
+    @GetMapping
+    ResponseEntity<UserResponseDto> findUserByEmail(@RequestParam String email) {
+        if (email == null) {
+            // TODO : 예외처리
+        }
+        return new ResponseEntity<>(userService.findUserByEmail(email), HttpStatus.OK);
+    }
+
 }
