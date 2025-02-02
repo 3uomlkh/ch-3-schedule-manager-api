@@ -52,6 +52,15 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public User findUserByIdWithPassword(Long userId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT * FROM users WHERE userId = ?",
+                userWithPasswordRowMapper(),
+                userId
+        );
+    }
+
+    @Override
     public UserResponseDto findUserByNameAndPassword(String name, String password) {
         return null;
     }
@@ -110,8 +119,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void deleteUser(Long userId, String password) {
-
+    public int deleteUser(Long userId) {
+        return jdbcTemplate.update("DELETE FROM users WHERE userId = ?", userId);
     }
 
     private RowMapper<UserResponseDto> userRowMapper() {
@@ -119,6 +128,17 @@ public class UserRepositoryImpl implements UserRepository {
                 rs.getLong("userId"),
                 rs.getString("name"),
                 rs.getString("email"),
+                rs.getObject("createdAt", LocalDateTime.class),
+                rs.getObject("updatedAt", LocalDateTime.class)
+        );
+    }
+
+    private RowMapper<User> userWithPasswordRowMapper() {
+        return (rs, rowNum) -> new User(
+                rs.getLong("userId"),
+                rs.getString("name"),
+                rs.getString("email"),
+                rs.getString("password"),
                 rs.getObject("createdAt", LocalDateTime.class),
                 rs.getObject("updatedAt", LocalDateTime.class)
         );
