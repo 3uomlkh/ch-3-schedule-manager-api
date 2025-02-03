@@ -11,6 +11,7 @@ public interface ScheduleRepository {
     List<ScheduleResponseDto> findSchedules(String writer, String updatedAt);
     ScheduleResponseDto findScheduleById(Long scheduleId);
     Schedule findScheduleByIdWithPassword(Long scheduleId);
+    Long findUserIdByScheduleId(Long scheduleId);
     int updateSchedule(Long scheduleId, Schedule schedule);
     int deleteSchedule(Long scheduleId);
 };

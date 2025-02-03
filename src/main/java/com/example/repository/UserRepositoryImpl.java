@@ -61,18 +61,12 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public UserResponseDto findUserByNameAndPassword(String name, String password) {
-        return null;
-    }
-
-    @Override
-    public List<UserResponseDto> findAllUsers() {
-        return List.of();
-    }
-
-    @Override
-    public UserResponseDto findUserByNameAndPassword(User user) {
-        return null;
+    public User findUserByNameAndPassword(String name, String password) {
+        return jdbcTemplate.queryForObject(
+                "SELECT * FROM users WHERE name = ? AND password = ?",
+                userWithPasswordRowMapper(),
+                name, password
+        );
     }
 
     @Override

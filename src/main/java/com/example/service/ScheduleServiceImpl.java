@@ -3,7 +3,11 @@ package com.example.service;
 import com.example.dto.schedule.ScheduleRequestDto;
 import com.example.dto.schedule.ScheduleResponseDto;
 import com.example.entity.Schedule;
+import com.example.entity.User;
 import com.example.repository.ScheduleRepository;
+import com.example.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,14 +19,23 @@ import java.util.List;
 public class ScheduleServiceImpl implements ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
+    private final UserRepository userRepository;
 
-    public ScheduleServiceImpl(ScheduleRepository scheduleRepository) {
+    public ScheduleServiceImpl(ScheduleRepository scheduleRepository, UserRepository userRepository) {
         this.scheduleRepository = scheduleRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public ScheduleResponseDto saveSchedule(ScheduleRequestDto dto) {
-        Schedule schedule = new Schedule(dto.getTask(), dto.getWriter(), dto.getPassword());
+        User existingUser;
+        try {
+            existingUser = userRepository.findUserByNameAndPassword(dto.getWriter(), dto.getPassword());
+        } catch (EmptyResultDataAccessException e) {
+            throw new IllegalArgumentException("error"); // TODO: 에러메시지 수정
+        }
+
+        Schedule schedule = new Schedule(dto.getTask(), existingUser.getUserId(), dto.getPassword());
         return scheduleRepository.saveSchedule(schedule);
     }
 
@@ -49,15 +62,20 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong password.");
         }
 
-        if (dto.getTask() == null || dto.getWriter() == null) {
+        if (dto.getTask() == null && dto.getWriter() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The task and writer are required values.");
         }
 
-        Schedule schedule = new Schedule(dto.getTask(), dto.getWriter(), dto.getPassword());
+        Long userId = scheduleRepository.findUserIdByScheduleId(scheduleId);
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The writer does not exist.");
+        }
+
+        Schedule schedule = new Schedule(dto.getTask(), userId, dto.getPassword());
         int updatedRow = scheduleRepository.updateSchedule(scheduleId, schedule);
 
         if (updatedRow == 0) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist schedule");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The schedule does not exist.");
         }
 
         return scheduleRepository.findScheduleById(scheduleId);

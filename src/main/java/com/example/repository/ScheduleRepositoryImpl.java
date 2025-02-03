@@ -2,6 +2,7 @@ package com.example.repository;
 
 import com.example.dto.schedule.ScheduleResponseDto;
 import com.example.entity.Schedule;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -13,11 +14,11 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Repository
-public class JdbcTemplateScheduleRepository implements ScheduleRepository{
+public class ScheduleRepositoryImpl implements ScheduleRepository{
 
     private final JdbcTemplate jdbcTemplate;
 
-    public JdbcTemplateScheduleRepository(DataSource dataSource) {
+    public ScheduleRepositoryImpl(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
@@ -29,37 +30,42 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
         LocalDateTime now = LocalDateTime.now();
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("task", schedule.getTask());
-        parameters.put("writer", schedule.getWriter());
+        parameters.put("userId", schedule.getUserId());
         parameters.put("password", schedule.getPassword());
         parameters.put("createdAt", now);
         parameters.put("updatedAt", now);
 
         Number key = jdbcInsert.executeAndReturnKey(new MapSqlParameterSource(parameters));
 
-        return new ScheduleResponseDto(key.longValue(), schedule.getTask(), schedule.getWriter(), now, now);
+        // userId에 해당하는 name 조회
+        String findUserQuery = "SELECT name FROM users WHERE userId = ?";
+        String writerName = jdbcTemplate.queryForObject(findUserQuery, String.class, schedule.getUserId());
+
+        return new ScheduleResponseDto(key.longValue(), schedule.getTask(), writerName, now, now);
     }
 
     @Override
     public List<ScheduleResponseDto> findAllSchedules() {
-        return jdbcTemplate.query("SELECT * FROM schedules", scheduleRowMapper());
+        return jdbcTemplate.query(getScheduleWithUserQuery(), scheduleRowMapper());
     }
 
     @Override
     public List<ScheduleResponseDto> findSchedules(String writer, String updatedAt) {
-        StringBuilder query = new StringBuilder("SELECT * FROM schedules WHERE 1=1");
+        StringBuilder query = new StringBuilder(getScheduleWithUserQuery());
+        query.append(" WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
         if (writer != null) {
-            query.append(" AND writer = ?");
+            query.append(" AND u.name = ?");
             params.add(writer);
         }
 
         if (updatedAt != null) {
-            query.append(" AND DATE(updatedAt) = ?");
+            query.append(" AND DATE(s.updatedAt) = ?");
             params.add(updatedAt);
         }
 
-        query.append(" ORDER BY DATE(updatedAt) DESC");
+        query.append(" ORDER BY DATE(s.updatedAt) DESC");
 
         return jdbcTemplate.query(
                 query.toString(),
@@ -70,12 +76,13 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
 
     @Override
     public ScheduleResponseDto findScheduleById(Long scheduleId) {
-        List<ScheduleResponseDto> query = jdbcTemplate.query(
-                "SELECT * FROM schedules WHERE scheduleId = ?",
+        String query = getScheduleWithUserQuery() + " WHERE s.scheduleId = ?";
+        List<ScheduleResponseDto> result = jdbcTemplate.query(
+                query,
                 scheduleRowMapper(),
                 scheduleId
         );
-        return query.isEmpty() ? null : query.get(0);
+        return result.isEmpty() ? null : result.get(0);
     }
 
     @Override
@@ -85,6 +92,12 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
                 scheduleWithPasswordRowMapper(),
                 scheduleId
         );
+    }
+
+    @Override
+    public Long findUserIdByScheduleId(Long scheduleId) {
+        String query = "SELECT userId FROM schedules WHERE scheduleId = ?";
+        return jdbcTemplate.queryForObject(query, Long.class, scheduleId);
     }
 
     @Override
@@ -99,10 +112,10 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
             firstField = false;
         }
 
-        if (schedule.getWriter() != null) {
+        if (schedule.getUserId() != null) {
             if (!firstField) query.append(",");
-            query.append(" writer = ?");
-            params.add(schedule.getWriter());
+            query.append(" userId = ?");
+            params.add(schedule.getUserId());
         }
 
         query.append(" WHERE scheduleId = ?");
@@ -120,6 +133,15 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
         return jdbcTemplate.update("DELETE FROM schedules WHERE scheduleId = ?", scheduleId);
     }
 
+    private String getScheduleWithUserQuery() {
+        return """
+        SELECT s.scheduleId, s.task, u.name AS writer, s.createdAt, s.updatedAt
+        FROM schedules s
+        JOIN users u ON s.userId = u.userId
+    """;
+    }
+
+
     private RowMapper<ScheduleResponseDto> scheduleRowMapper() {
         return (rs, rowNum) -> new ScheduleResponseDto(
                 rs.getLong("scheduleId"),
@@ -134,7 +156,7 @@ public class JdbcTemplateScheduleRepository implements ScheduleRepository{
         return (rs, rowNum) -> new Schedule(
                 rs.getLong("scheduleId"),
                 rs.getString("task"),
-                rs.getString("writer"),
+                rs.getLong("userId"),
                 rs.getString("password"),
                 rs.getObject("createdAt", LocalDateTime.class),
                 rs.getObject("updatedAt", LocalDateTime.class)

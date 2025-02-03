@@ -10,14 +10,19 @@ import java.time.LocalDateTime;
 public class Schedule {
     private Long scheduleId;
     private String task;
-    private String writer;
+    private Long userId;
     private String password;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public Schedule(String task, String writer,String password) {
+    public Schedule(String task, Long userId, String password) {
         this.task = task;
-        this.writer = writer;
+        this.userId = userId;
         this.password = password;
+    }
+
+    public Schedule(String task, Long userId) {
+        this.task = task;
+        this.userId = userId;
     }
 }
