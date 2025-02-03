@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -45,12 +46,18 @@ public class ScheduleRepositoryImpl implements ScheduleRepository{
     }
 
     @Override
-    public List<ScheduleResponseDto> findAllSchedules() {
-        return jdbcTemplate.query(getScheduleWithUserQuery(), scheduleRowMapper());
+    public List<ScheduleResponseDto> findAllSchedules(int page, int size) {
+        String query = getScheduleWithUserQuery() + " ORDER BY DATE(s.updatedAt) DESC LIMIT ? OFFSET ?";
+        int offset = page * size;
+        return jdbcTemplate.query(
+                query,
+                scheduleRowMapper(),
+                size, offset
+        );
     }
 
     @Override
-    public List<ScheduleResponseDto> findSchedules(String writer, String updatedAt) {
+    public List<ScheduleResponseDto> findSchedules(String writer, String updatedAt, int page, int size) {
         StringBuilder query = new StringBuilder(getScheduleWithUserQuery());
         query.append(" WHERE 1=1");
         List<Object> params = new ArrayList<>();
@@ -67,9 +74,53 @@ public class ScheduleRepositoryImpl implements ScheduleRepository{
 
         query.append(" ORDER BY DATE(s.updatedAt) DESC");
 
+        query.append(" LIMIT ? OFFSET ?");
+        params.add(size);
+        params.add(page * size);
+
         return jdbcTemplate.query(
                 query.toString(),
                 scheduleRowMapper(),
+                params.toArray()
+        );
+    }
+
+    @Override
+    public int countSchedules() {
+        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedules", Integer.class);
+    }
+
+    @Override
+    public int countSchedulesByWriter(String writer, String updatedAt) {
+        List<Object> params = new ArrayList<>();
+
+        StringBuilder query = new StringBuilder("""
+            SELECT COUNT(*)
+            FROM schedules s
+            JOIN users u ON s.userId = u.userId
+        """);
+
+        if (writer != null || updatedAt != null) {
+            query.append(" WHERE");
+
+            boolean addAnd = false;
+
+            if (writer != null) {
+                query.append(" u.name = ?");
+                params.add(writer);
+                addAnd = true;
+            }
+
+            if (updatedAt != null) {
+                if (addAnd) query.append(" AND");
+                query.append(" DATE(s.updatedAt) = ?");
+                params.add(updatedAt);
+            }
+        }
+
+        return jdbcTemplate.queryForObject(
+                query.toString(),
+                Integer.class,
                 params.toArray()
         );
     }
@@ -140,7 +191,6 @@ public class ScheduleRepositoryImpl implements ScheduleRepository{
         JOIN users u ON s.userId = u.userId
     """;
     }
-
 
     private RowMapper<ScheduleResponseDto> scheduleRowMapper() {
         return (rs, rowNum) -> new ScheduleResponseDto(

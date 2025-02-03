@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.example.Paging;
 import com.example.dto.schedule.ScheduleRequestDto;
 import com.example.dto.schedule.ScheduleResponseDto;
 import com.example.entity.Schedule;
@@ -8,6 +9,10 @@ import com.example.repository.ScheduleRepository;
 import com.example.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,13 +45,19 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    public List<ScheduleResponseDto> findAllSchedules() {
-        return scheduleRepository.findAllSchedules();
+    public Paging<ScheduleResponseDto> findAllSchedules(int page, int size) {
+        List<ScheduleResponseDto> schedules = scheduleRepository.findAllSchedules(page, size);
+        int totalElements = scheduleRepository.countSchedules();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        return new Paging<>(schedules, totalPages, totalElements, size, page);
     }
 
     @Override
-    public List<ScheduleResponseDto> findSchedules(String writer, String updatedAt) {
-        return scheduleRepository.findSchedules(writer, updatedAt);
+    public Paging<ScheduleResponseDto> findSchedules(String writer, String updatedAt, int page, int size) {
+        List<ScheduleResponseDto> schedules = scheduleRepository.findSchedules(writer, updatedAt, page, size);
+        int totalElements = scheduleRepository.countSchedulesByWriter(writer, updatedAt);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        return new Paging<>(schedules, totalPages, totalElements, size, page);
     }
 
     @Override

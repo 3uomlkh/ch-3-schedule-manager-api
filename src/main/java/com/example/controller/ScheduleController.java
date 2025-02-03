@@ -1,8 +1,10 @@
 package com.example.controller;
 
+import com.example.Paging;
 import com.example.dto.schedule.ScheduleRequestDto;
 import com.example.dto.schedule.ScheduleResponseDto;
 import com.example.service.ScheduleService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,14 +27,20 @@ public class ScheduleController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ScheduleResponseDto>> findSchedules(
+    public ResponseEntity<Paging<ScheduleResponseDto>> findSchedules(
             @RequestParam(required = false) String writer,
-            @RequestParam(required = false) String updatedAt
+            @RequestParam(required = false) String updatedAt,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
     ) {
+        Paging<ScheduleResponseDto> response;
+
         if (writer == null && updatedAt == null) {
-            return new ResponseEntity<>(scheduleService.findAllSchedules(), HttpStatus.OK);
+            response = scheduleService.findAllSchedules(page, size);
+        } else {
+            response = scheduleService.findSchedules(writer, updatedAt, page, size);
         }
-        return new ResponseEntity<>(scheduleService.findSchedules(writer, updatedAt), HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{scheduleId}")
